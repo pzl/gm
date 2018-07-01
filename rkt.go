@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	//"path/filepath"
+	"os"
+	"bufio"
+	"strconv"
 
 	"context"
 	"github.com/rkt/rkt/api/v1alpha"
@@ -38,4 +42,32 @@ func connect() error {
 	}
 
 	return nil
+}
+
+func isRktService(pid int) bool {
+	/* can't do, owned by root and not readable
+	sym, err := filepath.EvalSymlinks("/proc/"+strconv.Itoa(pid)+"/exe")
+	if err != nil {
+		return false
+	}
+	return sym == "/usr/bin/systemd-nspawn"
+	*/
+	file, err := os.Open("/proc/"+strconv.Itoa(pid)+"/cmdline")
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+	onNul := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		for i := 0; i < len(data); i++ {
+			if data[i] == '\x00' {
+				return i + 1, data[:i], nil
+			}
+		}
+		return 0, data, bufio.ErrFinalToken
+ 	}
+ 	scanner := bufio.NewScanner(file)
+ 	scanner.Split(onNul)
+ 	scanner.Scan()
+ 	exe := scanner.Text()
+ 	return exe == "/usr/bin/systemd-nspawn"
 }

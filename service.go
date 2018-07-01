@@ -34,6 +34,7 @@ type Service struct {
 	Restarts    int
 	Memory      uint64
 	TimeChange  uint64
+	Rkt         bool
 }
 
 func RegisterServiceHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
@@ -153,6 +154,8 @@ func GetServices(c *dbus.Conn) []Service {
 		timeProp, _ := c.GetUnitProperty(u.Name, "StateChangeTimestamp") // in microseconds
 		lastChange := timeProp.Value.Value().(uint64)
 
+		rkt := isRktService(pid)
+
 		list = append(list, Service{
 			Name:        u.Name,
 			Description: u.Description,
@@ -163,6 +166,7 @@ func GetServices(c *dbus.Conn) []Service {
 			Restarts:    nRestarts,
 			Memory:      mem,
 			TimeChange:  lastChange,
+			Rkt:         rkt,
 		})
 	}
 	return list
