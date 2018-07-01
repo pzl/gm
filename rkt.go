@@ -3,22 +3,10 @@ package main
 import (
 	"fmt"
 
-	//"net/http"
-	//"encoding/json"
-	//"strconv"
-
-	//"github.com/coreos/go-systemd/dbus"
-
 	"context"
 	"github.com/rkt/rkt/api/v1alpha"
 	"google.golang.org/grpc"
 )
-
-/*
-func main() {
-	connect()
-}
-*/
 
 func connect() error {
 	conn, err := grpc.Dial("closet:15442", grpc.WithInsecure()) // move back to localhost:15441 when done remote testing

@@ -34,29 +34,6 @@ func RegisterStatsHandlers(serveMux *http.ServeMux) {
 
 		blocks := DiskInfo()
 		stats.Disks = blocks
-		/* Old method -- only got mounted things, not unmounted blocks
-		mt, err := GetMounts()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		for _, m := range mt {
-			d, err := DiskUsage(m.Mount)
-			if err != nil {
-				continue
-			}
-			stats.Disks = append(stats.Disks, DiskStat{
-				FS:      m.FS,
-				Mount:   m.Mount,
-				Type:    m.Type,
-				All:     d.All,
-				Used:    d.Used,
-				Free:    d.Free,
-				TInodes: d.TInodes,
-				FInodes: d.FInodes,
-			})
-		}
-		*/
 
 		js, err := json.Marshal(stats)
 		if err != nil {

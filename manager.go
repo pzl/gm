@@ -7,10 +7,6 @@ import (
 	"log"
 	"github.com/coreos/go-systemd/dbus"
 
-	//"strconv"
-	//"strings"
-	//"encoding/json"
-
 	// dev only
 	"os"
 	"net/http/httputil"

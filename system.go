@@ -151,6 +151,7 @@ func Uname() string {
 	}
 	return charsToString(u.Release)
 }
+
 // required for crappy Utsname struct converting
 func charsToString(ca [65]int8) string {
 	s := make([]byte, len(ca))
@@ -163,69 +164,6 @@ func charsToString(ca [65]int8) string {
 	}
 	return string(s[0:lens])
 }
-
-
-/* Old disk info way -- only got mounted info, not unmounted blocks
-type Disk struct {
-	FS      string
-	Mount   string
-	All     uint64
-	Used    uint64
-	Free    uint64
-	TInodes uint64
-	FInodes uint64
-}
-
-func DiskUsage(path string) (*Disk, error) {
-	fs := syscall.Statfs_t{}
-	err := syscall.Statfs(path, &fs)
-	if err != nil {
-		return nil, err
-	}
-	d := Disk{
-		Mount: path,
-		All: fs.Blocks * uint64(fs.Bsize),
-		Free: fs.Bavail * uint64(fs.Bsize),
-		TInodes: fs.Files,
-		FInodes: fs.Ffree,
-	}
-	d.Used = d.All - d.Free
-
-	return &d, nil
-}
-
-type Mount struct {
-	FS    string
-	Mount string
-	Type  string
-}
-func GetMounts() ([]Mount, error) {
-	var m []Mount
-
-	procMount, err := ioutil.ReadFile("/proc/mounts")
-	if err != nil {
-		return nil, err
-	}
-
-	lines := strings.Split(string(procMount), "\n")
-	for _, line := range lines {
-		if line == "" {
-			continue
-		}
-		fields := strings.Fields(line)
-
-		if !strings.HasPrefix(fields[0], "/") && fields[0] != "tmpfs" {
-			continue
-		}
-		m = append(m, Mount{fields[0], fields[1], fields[2]})
-	}
-
-	return m, nil
-}
-*/
-
-
-
 
 type BlockDevice struct {
 	// populated from /proc/partitions
