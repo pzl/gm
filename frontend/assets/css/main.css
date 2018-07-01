@@ -1,0 +1,190 @@
+@import 'vars.css';
+
+/*! HTML5 Boilerplate v5.3.0 | MIT License | https://html5boilerplate.com/ */
+
+/*
+ * What follows is the result of much research on cross-browser styling.
+ * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
+ * Kroc Camen, and the H5BP dev community and team.
+ */
+
+/* ==========================================================================
+   Base styles: opinionated defaults
+   ========================================================================== */
+
+html {
+    color: #222;
+    font-size: 1em;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * Remove text-shadow in selection highlight:
+ * https://twitter.com/miketaylr/status/12228805301
+ *
+ * Vendor-prefixed and regular ::selection selectors cannot be combined:
+ * https://stackoverflow.com/a/16982510/7133471
+ *
+ * Customize the background color to match your design.
+ */
+
+::-moz-selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+::selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+/*
+ * A better looking default horizontal rule
+ */
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 1em 0;
+    padding: 0;
+}
+
+/*
+ * Remove the gap between audio, canvas, iframes,
+ * images, videos and the bottom of their containers:
+ * https://github.com/h5bp/html5-boilerplate/issues/440
+ */
+
+audio,
+canvas,
+iframe,
+img,
+svg,
+video {
+    vertical-align: middle;
+}
+
+/*
+ * Remove default fieldset styles.
+ */
+
+fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+ * Allow only vertical resizing of textareas.
+ */
+
+textarea {
+    resize: vertical;
+}
+
+/* ==========================================================================
+   Browser Upgrade Prompt
+   ========================================================================== */
+
+.browserupgrade {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000;
+    padding: 0.2em 0;
+}
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+* {
+	box-sizing: border-box;
+}
+
+
+html {
+  font-family: var(--fontnormal);
+  font-size: 16px;
+  word-spacing: 1px;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  color: #21252A;
+  font-weight: 300;
+}
+
+
+.page {
+	background: #EDF1F5;
+	min-height: 100vh;
+	overflow: auto;
+}
+
+.box {
+	background: white;
+	border: 1px solid var(--boxbordercolor);
+  width: 100%;
+	margin: 40px auto;
+	min-height: 100px;
+}
+
+@media screen and (min-width: 700px) {
+  .box {
+    width: 70%;
+    margin: 80px auto;
+  }
+}
+
+.datatable {
+	width: 96%;
+	border: 1px solid var(--boxbordercolor);
+	margin: 25px auto;
+	border-collapse: collapse;
+}
+
+.datatable td {
+	border-top: 1px solid var(--boxbordercolor);
+	border-left: 1px solid var(--boxbordercolor);
+	padding: 8px;
+	text-align: right;
+}
+
+.datatable td:first-child {
+	font-family: var(--fontlight);
+	text-align: left;
+}
+
+.datatable tr:first-child td {
+	border-top: none;
+}
+
+.quickbar {
+	display: flex;
+}
+
+.quickbar > div {
+	border-left: 1px solid #E1E2E2;
+	flex-grow: 1;
+	padding: 20px;
+	display: flex;
+	align-items: center;
+	text-align: center;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.quickbar .val {
+	font-family: var(--fontbold);
+	font-size: 26px;
+}
+
+.quickbar > div:first-child {
+	border: none;
+}

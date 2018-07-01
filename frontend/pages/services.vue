@@ -1,0 +1,75 @@
+<template>
+	<section id="services">
+		<div class="box quickservices">
+			<div v-for="s in services" :key="s.Name" class="svc-quick">
+				<div class="status-bubble" :class="{ok: ok(s)}" :title="s.Name"></div>
+			</div>
+		</div>
+		<service v-for="s in services" :key="s.Name" v-bind="s" />
+	</section>
+</template>
+
+<script>
+import Service from '~/components/Service.vue'
+import axios from 'axios'
+
+export default {
+	data: function () {
+		return {
+			services: []
+		}
+	},
+	mounted () {
+		axios.get(process.env.api+'/api/services/')
+			.then(response => this.services = response.data)
+	},
+	methods: {
+		ok: function(s) {
+			return s.LoadState == "loaded" && s.ActiveState == "active" && s.SubState == "running"
+		},
+	},
+	components: { Service }
+}
+</script>
+
+
+<style>
+
+:root {
+	--checkheight: 10px;
+}
+
+.quickservices {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+
+.status-bubble {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #E35321;
+	border-radius: 100%;
+	width: 20px;
+	height: 20px;
+}
+
+.status-bubble.ok {
+	background-color: transparent;
+}
+
+.status-bubble.ok::after {
+	content: '';
+	display: block;
+	width: var(--checkheight);
+	height: calc(var(--checkheight) * 2);
+	border: solid #78BB00;
+	border-width: 0 calc(var(--checkheight) * 0.8) calc(var(--checkheight) * 0.8) 0;
+	transform: rotate(45deg);
+	position: relative;
+	top: calc(var(--checkheight) / 2 * -1);
+}
+
+
+</style>

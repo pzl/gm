@@ -1,0 +1,5 @@
+node_modules/
+manager
+frontend/dist/
+*.ora
+vendor/

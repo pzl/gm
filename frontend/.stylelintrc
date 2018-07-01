@@ -1,0 +1,15 @@
+{
+	"processors": ["@mapbox/stylelint-processor-arbitrary-tags"],
+	"extends": "stylelint-config-standard",
+	"rules": {
+		"indentation": null,
+		"color-hex-case": null,
+		"declaration-colon-space-after": null,
+		"selector-list-comma-newline-after": null,
+		"rule-empty-line-before": null,
+		"comment-empty-line-before": null,
+		"comment-whitespace-inside": null,
+		"max-empty-lines": null,
+		"no-empty-source": null
+	}
+}
