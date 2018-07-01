@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	//"path/filepath"
 	"os"
 	"bufio"
 	"strconv"
@@ -45,13 +44,6 @@ func connect() error {
 }
 
 func isRktService(pid int) bool {
-	/* can't do, owned by root and not readable
-	sym, err := filepath.EvalSymlinks("/proc/"+strconv.Itoa(pid)+"/exe")
-	if err != nil {
-		return false
-	}
-	return sym == "/usr/bin/systemd-nspawn"
-	*/
 	file, err := os.Open("/proc/"+strconv.Itoa(pid)+"/cmdline")
 	if err != nil {
 		return false
