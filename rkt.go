@@ -1,47 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"bufio"
 	"strconv"
+	"strings"
 
 	"context"
 	"github.com/rkt/rkt/api/v1alpha"
 	"google.golang.org/grpc"
 )
-
-func connect() error {
-	conn, err := grpc.Dial("closet:15442", grpc.WithInsecure()) // move back to localhost:15441 when done remote testing
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	c := v1alpha.NewPublicAPIClient(conn)
-
-	//list pods
-	pods, err := c.ListPods(context.Background(), &v1alpha.ListPodsRequest{
-		Detail:  true,
-		Filters: []*v1alpha.PodFilter{},
-	})
-	if err != nil {
-		return err
-	}
-	for _, p := range pods.Pods {
-		fmt.Printf("POD %+v\n", p)
-	}
-
-	imgs, err := c.ListImages(context.Background(), &v1alpha.ListImagesRequest{
-		Detail:  true,
-		Filters: []*v1alpha.ImageFilter{},
-	})
-	for _, img := range imgs.Images {
-		fmt.Printf("image: %q\n", img.Name)
-	}
-
-	return nil
-}
 
 func isRktService(pid int) bool {
 	file, err := os.Open("/proc/"+strconv.Itoa(pid)+"/cmdline")
@@ -62,4 +30,55 @@ func isRktService(pid int) bool {
  	scanner.Scan()
  	exe := scanner.Text()
  	return exe == "/usr/bin/systemd-nspawn"
+}
+
+var sysPods []*v1alpha.Pod
+
+func getSystemPods() {
+	conn, err := grpc.Dial("closet:15442", grpc.WithInsecure()) // move back to localhost:15441 when done remote testing
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+	c := v1alpha.NewPublicAPIClient(conn)
+
+	pods, err := c.ListPods(context.Background(), &v1alpha.ListPodsRequest{
+		Detail:  true,
+		Filters: []*v1alpha.PodFilter{},
+	})
+	if err != nil {
+		return
+	}
+	sysPods = pods.Pods
+}
+
+type RktInfo *v1alpha.Pod
+
+func getRktInfo(s *Service) {
+	if sysPods == nil {
+		getSystemPods()
+	}
+
+	PodSearch:
+	for _, p := range sysPods {
+		for _, a := range p.Apps {
+			if serviceMatchesContainer(s.Name, a.Name) {
+				s.Container = RktInfo(p)
+				break PodSearch
+			}
+		}
+	}
+}
+
+func serviceMatchesContainer(srv string, ctr string) bool {
+	if srv == ctr + ".service" {
+		return true
+	}
+	if srv == strings.Split(ctr, "-")[0] + ".service" {
+		return true
+	}
+	if srv == "entertainment.service" && (ctr == "sonarr" || ctr == "radarr" || ctr == "jackett") {
+		return true
+	}
+	return false
 }
