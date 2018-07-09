@@ -2,8 +2,8 @@
 	<div class="service box">
 		<div class="svc-maininfo" :class="{ 'ok': ok }">
 			<div class="svc-identity">
-				<div class="name">{{Name}}</div>
-				<div class="desc" v-if="Description != Name">{{Description}}</div>
+				<h2 class="name">{{Name}}</h2>
+				<p class="desc" v-if="Description != Name">{{Description}}</p>
 			</div>
 			<a href="#" class="svc-link" v-if="domains.length">http://example.com</a>
 			<div class="svc-stats">
@@ -18,7 +18,7 @@
 				</div>
 				<div class="port">
 					<div class="svc-label">Port</div>
-					<div class="svc-value">{{port}}</div>
+					<div class="svc-value">{{ports}}</div>
 				</div>
 				<div class="restarts">
 					<div class="svc-label">Restarts</div>
@@ -27,23 +27,26 @@
 				<div class="aux-info">
 					<p v-if="ok">Uptime: {{time}}</p>
 					<p v-else>Since: {{time}}</p>
-					<p>mount: {{mounts[0]}}</p>
+					<div v-if="Rkt && shortMounts.length">
+						Mount{{ shortMounts.length > 1 ? 's' : ''}}
+						<p v-for="m in shortMounts" :key="m">{{m}}</p>
+					</div>
 				</div>
 			</div>
 		</div>
-		<div class="extendedstats" :class="{shown:showExtend}">
-			<div>Package: {{pkg}}</div>
-			<div>PkgVer: {{packageVer}}</div>
-			<div>container: {{container}}</div>
-			<div>containerSize: {{containerSize}}</div>
-		</div>
-		<div class="showmore" v-if="LoadState != 'not-found'" @click="toggle"><downArrow v-if="!showExtend" /><upArrow v-else /></div>
+		<template v-if="Rkt">
+			<div class="extendedstats" :class="{shown:showExtend}">
+				<container v-bind="Container" />
+			</div>
+			<div class="showmore" v-if="LoadState != 'not-found'" @click="toggle"><downArrow v-if="!showExtend" /><upArrow v-else /></div>
+		</template>
 	</div>
 </template>
 
 
 <script>
 import { formatDistance } from 'date-fns'
+import Container from '~/components/Container.vue'
 import downArrow from '~/assets/downarrow.svg?inline'
 import upArrow from '~/assets/uparrow.svg?inline'
 
@@ -58,15 +61,11 @@ export default {
 		'Restarts':{},
 		'Memory':{},
 		'TimeChange':{},
+		'Rkt': {},
+		'Container': {},
 	},
 	data: function () {
 		return {
-			port: 0,
-			pkg: "",
-			packageVer: "",
-			container: "",
-			containerSize: 0,
-			mounts: [],
 			domains: [],
 			showExtend:false,
 		}
@@ -95,6 +94,50 @@ export default {
 			} else {
 				return "unknown"
 			}
+		},
+		ports: function () {
+			if (this.Container && this.Container.manifest.ports.length) {
+				return this.Container.manifest.ports.map(p=>p.hostPort).join(', ')
+			} else {
+				// @TODO
+				return "?"
+			}
+		},
+		mounts: function () {
+			if (this.Container && this.Container.manifest.volumes && this.Container.manifest.volumes.length) {
+				return this.Container.manifest.volumes.filter(v=>v.kind != "empty").map(v=>v.source)
+			} else {
+				return []
+			}
+		},
+		shortMounts: function() {
+			if (this.mounts.length < 2) {
+				return this.mounts
+			}
+
+			let mnt = this.mounts.slice(0).sort()
+			let shortened = []
+
+			let dirMatches = 0
+			let prevMatches = Infinity
+			mnt = mnt.map(m=>m.split('/'))
+
+			for (let i=mnt.length-2; i>=0; i--) {
+				let shorter = mnt[i].length < mnt[i+1].length ? mnt[i] : mnt[i+1]
+				for (let j=0; j<shorter.length; j++) {
+					if (mnt[i][j] == mnt[i+1][j]) {
+						dirMatches++
+					}
+				}
+				if (dirMatches <= prevMatches && mnt[i].slice(0,dirMatches).join("/") != shortened[shortened
+				    .length-1] ) {
+					shortened.push(mnt[i].slice(0,dirMatches).join("/"))
+				}
+				prevMatches = dirMatches
+				dirMatches = 0
+			}
+
+			return shortened
 		}
 	},
 	methods: {
@@ -102,7 +145,7 @@ export default {
 			this.showExtend = !this.showExtend
 		}
 	},
-	components: { downArrow, upArrow }
+	components: { downArrow, upArrow, Container }
 
 }
 </script>
@@ -135,6 +178,11 @@ export default {
 .service .name {
 	font-family: var(--fontnormal);
 	font-size: 21px;
+	font-weight: normal;
+}
+
+.service .desc {
+	margin: 0;
 }
 
 .svc-stats {
