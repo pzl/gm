@@ -24,7 +24,6 @@ export default {
 	computed: {
 		blkSize: function () {
 			return this.rawsize*1024
-			//return this.disks.map(d=>d.All).reduce((acc,cur)=>acc+cur,0)
 		},
 		width: function () {
 			return  this.blkSize / this.max * 100 + '%'

@@ -35,7 +35,7 @@ func isRktService(pid int) bool {
 var sysPods []*v1alpha.Pod
 
 func getSystemPods() {
-	conn, err := grpc.Dial("closet:15442", grpc.WithInsecure()) // move back to localhost:15441 when done remote testing
+	conn, err := grpc.Dial("localhost:15441", grpc.WithInsecure())
 	if err != nil {
 		return
 	}

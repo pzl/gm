@@ -2,15 +2,16 @@ package main
 
 import (
 	//"fmt"
+	"log"
 	"net/http"
 	"time"
-	"log"
+
 	"github.com/coreos/go-systemd/dbus"
 
 	// dev only
-	"os"
 	"net/http/httputil"
 	"net/url"
+	"os"
 )
 
 func main() {
@@ -37,15 +38,14 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr: ":8080",
-		ReadTimeout: 5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout: 120 * time.Second,
-		MaxHeaderBytes: 1<<16,
+		Addr:           ":2556",
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		IdleTimeout:    120 * time.Second,
+		MaxHeaderBytes: 1 << 16,
 		//TLSConfig: tlsConfig,
 		Handler: serveMux,
 	}
 
 	log.Println(srv.ListenAndServe())
 }
-
