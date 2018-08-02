@@ -59,6 +59,7 @@ func getRktInfo(s *Service) {
 		getSystemPods()
 	}
 
+	// BUG(pzl): early-matches a possibly old/garbage container for a given svc
 	PodSearch:
 	for _, p := range sysPods {
 		for _, a := range p.Apps {
