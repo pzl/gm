@@ -1,18 +1,19 @@
 package main
 
 import (
-	"os"
 	"bufio"
+	"os"
 	"strconv"
 	"strings"
 
 	"context"
+
 	"github.com/rkt/rkt/api/v1alpha"
 	"google.golang.org/grpc"
 )
 
 func isRktService(pid int) bool {
-	file, err := os.Open("/proc/"+strconv.Itoa(pid)+"/cmdline")
+	file, err := os.Open("/proc/" + strconv.Itoa(pid) + "/cmdline")
 	if err != nil {
 		return false
 	}
@@ -24,12 +25,12 @@ func isRktService(pid int) bool {
 			}
 		}
 		return 0, data, bufio.ErrFinalToken
- 	}
- 	scanner := bufio.NewScanner(file)
- 	scanner.Split(onNul)
- 	scanner.Scan()
- 	exe := scanner.Text()
- 	return exe == "/usr/bin/systemd-nspawn"
+	}
+	scanner := bufio.NewScanner(file)
+	scanner.Split(onNul)
+	scanner.Scan()
+	exe := scanner.Text()
+	return exe == "/usr/bin/systemd-nspawn"
 }
 
 var sysPods []*v1alpha.Pod
@@ -60,7 +61,7 @@ func getRktInfo(s *Service) {
 	}
 
 	// BUG(pzl): early-matches a possibly old/garbage container for a given svc
-	PodSearch:
+PodSearch:
 	for _, p := range sysPods {
 		for _, a := range p.Apps {
 			if serviceMatchesContainer(s.Name, a.Name) {
@@ -72,10 +73,10 @@ func getRktInfo(s *Service) {
 }
 
 func serviceMatchesContainer(srv string, ctr string) bool {
-	if srv == ctr + ".service" {
+	if srv == ctr+".service" {
 		return true
 	}
-	if srv == strings.Split(ctr, "-")[0] + ".service" {
+	if srv == strings.Split(ctr, "-")[0]+".service" {
 		return true
 	}
 	if srv == "entertainment.service" && (ctr == "sonarr" || ctr == "radarr" || ctr == "jackett") {
