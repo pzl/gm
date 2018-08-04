@@ -37,4 +37,4 @@ Simply copy the `manager` binary wherever you want, and move the `frontend/dist`
 License
 --------
 
-This project is licensed under the MIT License. See `Copying` for the full license. Copyright 2018 Dan Panzarella.
+This project is licensed under the MIT License. See `LICENSE` for the full license. Copyright 2018 Dan Panzarella.
