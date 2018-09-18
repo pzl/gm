@@ -9,7 +9,7 @@ ALL: $(SERVER) $(FRONTEND)
 
 install-deps:
 	dep ensure
-	cs frontend && npm install
+	cd frontend && npm install
 
 dev:
 	cd frontend && npm run dev

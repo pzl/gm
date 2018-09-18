@@ -9,6 +9,7 @@ import (
 	"github.com/coreos/go-systemd/dbus"
 
 	_ "context"
+
 	_ "github.com/rkt/rkt/api/v1alpha"
 	_ "google.golang.org/grpc"
 )
@@ -75,7 +76,7 @@ func RegisterServiceHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 }
 
 func GetVPNService(c *dbus.Conn) *Service {
-	units, err := c.ListUnitsByNames([]string{"openvpn-client@US-East-exported.service"})
+	units, err := c.ListUnitsByNames([]string{"openvpn-client@DC.service"})
 	if err != nil {
 		return nil
 	}
@@ -126,7 +127,7 @@ func GetServices(c *dbus.Conn) []Service {
 		"monica.service",
 		"nginx-proxy.service",
 		"quickscan.service",
-		"openvpn-client@US-East-exported.service",
+		"openvpn-client@DC.service",
 		"sshd.service",
 		"avahi-daemon.service",
 		"org.cups.cupsd.service",
