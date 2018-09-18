@@ -1,17 +1,17 @@
 package main
 
 import (
-	"syscall"
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"net/http"
 
-	"os"
-	"os/exec"
 	"bytes"
 	"encoding/json"
+	"os"
+	"os/exec"
 
 	"github.com/coreos/go-systemd/dbus"
 )
@@ -22,7 +22,7 @@ type Versions struct {
 }
 
 func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
-	serveMux.HandleFunc("/api/system/reload", func (w http.ResponseWriter, r *http.Request){
+	serveMux.HandleFunc("/api/system/reload", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		err := ReloadSystemD(c)
 		if err != nil {
@@ -32,10 +32,10 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 		}
 	})
 
-	serveMux.HandleFunc("/api/system/versions/", func(w http.ResponseWriter, r *http.Request){
+	serveMux.HandleFunc("/api/system/versions/", func(w http.ResponseWriter, r *http.Request) {
 		v := Versions{
 			Linux: Uname(),
-			Rkt: RktVer(),
+			Rkt:   RktVer(),
 		}
 
 		js, err := json.Marshal(v)
@@ -49,7 +49,7 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 		w.Write(js)
 	})
 
-	serveMux.HandleFunc("/api/system/vpn/", func (w http.ResponseWriter, r *http.Request){
+	serveMux.HandleFunc("/api/system/vpn/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		vpn := GetVPNService(c)
@@ -59,9 +59,9 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 		}
 
 		if vpn.LoadState == "loaded" &&
-		   vpn.ActiveState == "active" &&
-		   vpn.SubState == "running" &&
-		   vpn.PID != 0 {
+			vpn.ActiveState == "active" &&
+			vpn.SubState == "running" &&
+			vpn.PID != 0 {
 			w.Write([]byte("true"))
 			return
 		}
@@ -69,7 +69,7 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 		w.Write([]byte("false"))
 	})
 
-	serveMux.HandleFunc("/api/system/memory/", func (w http.ResponseWriter, r *http.Request){
+	serveMux.HandleFunc("/api/system/memory/", func(w http.ResponseWriter, r *http.Request) {
 
 		m := RAM()
 		if m == nil {
@@ -108,7 +108,6 @@ func RktVer() string {
 	fields := strings.Fields(string(lines[0]))
 	return fields[2]
 }
-
 
 type Meminfo struct {
 	Total int64 `json:"total"`
@@ -167,9 +166,9 @@ func charsToString(ca [65]int8) string {
 
 type BlockDevice struct {
 	// populated from /proc/partitions
-	maj          int
-	min          int
-	RawSize      uint64
+	maj       int
+	min       int
+	RawSize   uint64
 	Block     string
 	Removable bool
 
@@ -204,7 +203,7 @@ func blockDevices() ([]*BlockDevice, error) {
 		}
 
 		var remove bool
-		rem, err := ioutil.ReadFile("/sys/block/"+fields[3]+"/removable")
+		rem, err := ioutil.ReadFile("/sys/block/" + fields[3] + "/removable")
 		if err != nil {
 			remove = false
 		} else {
@@ -225,7 +224,6 @@ func blockDevices() ([]*BlockDevice, error) {
 	}
 	return b, nil
 }
-
 
 func mountInfo(b []*BlockDevice) {
 	mounts, err := ioutil.ReadFile("/proc/self/mounts")
@@ -264,7 +262,7 @@ func sizeInfo(b *BlockDevice) {
 
 	reserved := (fs.Bfree - fs.Bavail) * uint64(fs.Bsize)
 
-	b.All = fs.Blocks * uint64(fs.Bsize) - reserved
+	b.All = fs.Blocks*uint64(fs.Bsize) - reserved
 	b.Free = fs.Bavail * uint64(fs.Bsize)
 	b.TInodes = fs.Files
 	b.FInodes = fs.Ffree
@@ -272,7 +270,6 @@ func sizeInfo(b *BlockDevice) {
 
 	return
 }
-
 
 func DiskInfo() []*BlockDevice {
 	blocks, err := blockDevices()
