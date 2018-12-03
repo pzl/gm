@@ -8,7 +8,7 @@ ALL: $(SERVER) $(FRONTEND)
 
 
 install-deps:
-	dep ensure
+	go mod vendor
 	cd frontend && npm install
 
 dev:
@@ -16,7 +16,7 @@ dev:
 	go run manage.go
 
 $(SERVER): $(GO_SRCS)
-	go build
+	go build -mod=vendor
 
 $(FRONTEND): frontend/
 	cd frontend && npm run generate
