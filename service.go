@@ -133,6 +133,7 @@ func GetServices(c *dbus.Conn) []Service {
 		"org.cups.cupsd.service",
 		"rkt-api.service",
 		"netatalk.service",
+		"nfs-server.service",
 	}
 
 	units, err := c.ListUnitsByNames(services)
