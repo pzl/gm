@@ -51,22 +51,7 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 
 	serveMux.HandleFunc("/api/system/vpn/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-
-		vpn := GetVPNService(c)
-		if vpn == nil {
-			w.Write([]byte("false"))
-			return
-		}
-
-		if vpn.LoadState == "loaded" &&
-			vpn.ActiveState == "active" &&
-			vpn.SubState == "running" &&
-			vpn.PID != 0 {
-			w.Write([]byte("true"))
-			return
-		}
-
-		w.Write([]byte("false"))
+		w.Write([]byte("n/a"))
 	})
 
 	serveMux.HandleFunc("/api/system/memory/", func(w http.ResponseWriter, r *http.Request) {
