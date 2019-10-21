@@ -17,8 +17,9 @@ import (
 )
 
 type Versions struct {
-	Linux string `json:"linux"`
-	Rkt   string `json:"rkt"`
+	Linux  string `json:"linux"`
+	Rkt    string `json:"rkt"`
+	Podman string `json:"podman"`
 }
 
 func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
@@ -34,8 +35,9 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 
 	serveMux.HandleFunc("/api/system/versions/", func(w http.ResponseWriter, r *http.Request) {
 		v := Versions{
-			Linux: Uname(),
-			Rkt:   RktVer(),
+			Linux:  Uname(),
+			Rkt:    RktVer(),
+			Podman: PodmanVersion(),
 		}
 
 		js, err := json.Marshal(v)
@@ -92,6 +94,19 @@ func RktVer() string {
 	lines := bytes.Split(out, []byte{'\n'})
 	fields := strings.Fields(string(lines[0]))
 	return fields[2]
+}
+
+/*
+ * Gets local podman version as a string
+ */
+func PodmanVersion() string {
+	out, err := exec.Command("podman", "version").Output()
+	if err != nil {
+		return err.Error()
+	}
+	lines := bytes.Split(out, []byte{'\n'})
+	fields := strings.Fields(string(lines[0]))
+	return fields[1]
 }
 
 type Meminfo struct {
