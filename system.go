@@ -134,8 +134,8 @@ func RAM() *Meminfo {
 	lines := bytes.Split(buf, []byte{'\n'})
 	t := strings.Fields(string(lines[0]))
 	av := strings.Fields(string(lines[2]))
-	m.Total, err = strconv.ParseInt(t[1], 10, 64)
-	m.Avail, err = strconv.ParseInt(av[1], 10, 64)
+	m.Total, _ = strconv.ParseInt(t[1], 10, 64)
+	m.Avail, _ = strconv.ParseInt(av[1], 10, 64)
 
 	return &m
 }
