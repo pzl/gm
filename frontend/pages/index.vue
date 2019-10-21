@@ -6,7 +6,7 @@
   			Services: <span class="val">{{services}}</span>
   		</div>
   		<div class="vpn">
-  			VPN: <span class="val">{{vpn}}</span>
+  			VPN: <span class="val">{{vpnState}}</span>
   		</div>
   	</div>
 
@@ -26,8 +26,8 @@
             <td>{{podman}}</td>
           </tr>
 	  			<tr>
-	  				<td>Memory</td>
-	  				<td>{{kbSize(mem.total)}}</td>
+	  				<td>Memory Used / Total</td>
+	  				<td>{{kbSize(mem.used)}} / {{kbSize(mem.total)}}</td>
 	  			</tr>
 	  		</tbody>
   		</table>
@@ -43,14 +43,18 @@ export default {
   data: function() {
   	return {
   		services: 0,
-  		vpn: "down",
+  		vpn: false,
   		linuxver: "",
   		rkt: "",
       podman: "",
   		mem: {
   			total: 0,
+        used: 0,
   		}
   	}
+  },
+  computed: {
+    vpnState() { return this.vpn === true ? "up" : "down" },
   },
   components: {
   },
@@ -59,19 +63,18 @@ export default {
     get: url => axios.get(process.env.api+url),
   },
   mounted () {
-  	Promise.all([
-  	    axios.get(process.env.api+"/api/services/count/"),
-  	    axios.get(process.env.api+"/api/system/versions/"),
-  	    axios.get(process.env.api+"/api/system/memory/"),
-  	    axios.get(process.env.api+"/api/system/vpn/"),
-  	]).then(([count,vers, mem, vpn]) => {
-  		this.services = count.data
-  		this.linuxver = vers.data.linux
-  		this.rkt = vers.data.rkt
-  		this.podman = vers.data.podman
-  		this.mem.total = mem.data.total
-  		this.vpn = vpn.data === true ? "up" : "down"
-  	})
+    this.get("/api/services/count").then(c => {this.services = c.data })
+    this.get("/api/system/versions").then(v => {
+      this.linuxver = v.data.linux
+      this.rkt = v.data.rkt
+      this.podman = v.data.podman
+    })
+    this.get("/api/system/memory").then(m=> {
+      this.mem.total = m.data.total
+      this.mem.used = m.data.total - m.data.avail
+    })
+
+    this.get("/api/system/vpn").then(v=>{this.vpn = v.data})
   }
 }
 </script>
