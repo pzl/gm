@@ -21,6 +21,10 @@
 	  				<td>rkt version</td>
 	  				<td>{{rkt}}</td>
 	  			</tr>
+          <tr>
+            <td>Podman Version</td>
+            <td>{{podman}}</td>
+          </tr>
 	  			<tr>
 	  				<td>Memory</td>
 	  				<td>{{kbSize(mem.total)}}</td>
@@ -42,6 +46,7 @@ export default {
   		vpn: "down",
   		linuxver: "",
   		rkt: "",
+      podman: "",
   		mem: {
   			total: 0,
   		}
@@ -50,7 +55,8 @@ export default {
   components: {
   },
   methods: {
-  	kbSize: n => (n/2**20).toFixed(1)+" GB"
+  	kbSize: n => (n/2**20).toFixed(1)+" GB",
+    get: url => axios.get(process.env.api+url),
   },
   mounted () {
   	Promise.all([
@@ -62,6 +68,7 @@ export default {
   		this.services = count.data
   		this.linuxver = vers.data.linux
   		this.rkt = vers.data.rkt
+  		this.podman = vers.data.podman
   		this.mem.total = mem.data.total
   		this.vpn = vpn.data === true ? "up" : "down"
   	})
