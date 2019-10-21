@@ -83,45 +83,6 @@ func RegisterServiceHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 	})
 }
 
-func GetVPNService(c *dbus.Conn) *Service {
-	units, err := c.ListUnitsByNames([]string{"vpn-out.service"})
-	if err != nil {
-		return nil
-	}
-
-	if len(units) < 1 {
-		return nil
-	}
-
-	u := units[0]
-	propPID, _ := c.GetServiceProperty(u.Name, "MainPID") //or ExecMainPID
-	pid := int(propPID.Value.Value().(uint32))
-
-	propRestarts, _ := c.GetServiceProperty(u.Name, "NRestarts")
-	nRestarts := int(propRestarts.Value.Value().(uint32))
-
-	propMem, _ := c.GetServiceProperty(u.Name, "MemoryCurrent")
-	mem := propMem.Value.Value().(uint64)
-	if mem > 1<<40 { //arbitrarily large to filter huge data
-		mem = 0
-	}
-
-	timeProp, _ := c.GetUnitProperty(u.Name, "StateChangeTimestamp") // in microseconds
-	lastChange := timeProp.Value.Value().(uint64)
-
-	return &Service{
-		Name:        u.Name,
-		Description: u.Description,
-		LoadState:   u.LoadState,
-		ActiveState: u.ActiveState,
-		SubState:    u.SubState,
-		PID:         pid,
-		Restarts:    nRestarts,
-		Memory:      mem,
-		TimeChange:  lastChange,
-	}
-}
-
 func GetServices(c *dbus.Conn) []Service {
 	var list []Service
 

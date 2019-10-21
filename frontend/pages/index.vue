@@ -43,7 +43,7 @@ export default {
 	data: function() {
 		return {
 			services: 0,
-			vpn: false,
+			vpn: -1,
 			linuxver: "",
 			rkt: "",
 			podman: "",
@@ -54,7 +54,13 @@ export default {
 		}
 	},
 	computed: {
-		vpnState() { return this.vpn === true ? "up" : "down" },
+		vpnState() {
+			switch (this.vpn) {
+				case true: return "up"
+				case false: return "down"
+				default: return "unknown"
+			}
+	},
 	},
 	components: {
 	},

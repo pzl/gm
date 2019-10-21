@@ -53,7 +53,17 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 
 	serveMux.HandleFunc("/api/system/vpn/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Write([]byte("n/a"))
+		w.Header().Set("Content-Type", "application/json")
+		out, err := exec.Command("systemctl", "is-active", "vpn-out.service").Output()
+		if err != nil && len(out) == 0 {
+			w.Write([]byte(`{"error": "` + err.Error() + `"}`))
+			return
+		}
+		if strings.TrimSpace(string(out)) == "active" {
+			w.Write([]byte("true"))
+			return
+		}
+		w.Write([]byte("false"))
 	})
 
 	serveMux.HandleFunc("/api/system/memory/", func(w http.ResponseWriter, r *http.Request) {
