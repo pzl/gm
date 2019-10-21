@@ -25,6 +25,14 @@ import (
 /* Or: `rkt list` + `rkt cat-manifest <UUID>` + `rkt status <UUID>`
  */
 
+type Runtime string
+
+const (
+	RunNative Runtime = "native"
+	RunRkt    Runtime = "rkt"
+	RunPodman Runtime = "podman"
+)
+
 type Service struct {
 	Name        string
 	Description string
@@ -35,7 +43,7 @@ type Service struct {
 	Restarts    int
 	Memory      uint64
 	TimeChange  uint64
-	Rkt         bool
+	Runtime     Runtime
 	Container   RktInfo
 }
 
@@ -76,7 +84,7 @@ func RegisterServiceHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 }
 
 func GetVPNService(c *dbus.Conn) *Service {
-	units, err := c.ListUnitsByNames([]string{"openvpn-client@DC.service"})
+	units, err := c.ListUnitsByNames([]string{"vpn-out.service"})
 	if err != nil {
 		return nil
 	}
@@ -172,11 +180,15 @@ func GetServices(c *dbus.Conn) []Service {
 			Restarts:    nRestarts,
 			Memory:      mem,
 			TimeChange:  lastChange,
-			Rkt:         isRktService(pid),
 		}
-
-		if s.Rkt {
+		switch {
+		case isPodmanService(pid):
+			s.Runtime = RunPodman
+		case isRktService(pid):
+			s.Runtime = RunRkt
 			getRktInfo(&s)
+		default:
+			s.Runtime = RunNative
 		}
 
 		list = append(list, s)

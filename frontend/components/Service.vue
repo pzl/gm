@@ -3,7 +3,10 @@
 		<div class="svc-maininfo" :class="{ 'ok': ok }">
 			<div class="svc-identity">
 				<h2 class="name">{{Name}}</h2>
-				<p class="desc" v-if="Description != Name">{{Description}}</p>
+				<div class="svc-meta">
+					<p class="desc" v-if="Description != Name">{{Description}}</p>
+					<div v-if="ok" class="runtime">{{Runtime}}</div>
+				</div>
 			</div>
 			<a href="#" class="svc-link" v-if="domains.length">http://example.com</a>
 			<div class="svc-stats">
@@ -27,14 +30,14 @@
 				<div class="aux-info">
 					<p v-if="ok">Uptime: {{time}}</p>
 					<p v-else>Since: {{time}}</p>
-					<div v-if="Rkt && shortMounts.length">
+					<div v-if="Runtime === 'rkt' && shortMounts.length">
 						Mount{{ shortMounts.length > 1 ? 's' : ''}}
 						<p v-for="m in shortMounts" :key="m">{{m}}</p>
 					</div>
 				</div>
 			</div>
 		</div>
-		<template v-if="Rkt">
+		<template v-if="Runtime === 'rkt'">
 			<div class="extendedstats" :class="{shown:showExtend}">
 				<container v-bind="Container" />
 			</div>
@@ -61,7 +64,7 @@ export default {
 		'Restarts':{},
 		'Memory':{},
 		'TimeChange':{},
-		'Rkt': {},
+		'Runtime': {},
 		'Container': {},
 	},
 	data: function () {
@@ -183,6 +186,10 @@ export default {
 
 .service .desc {
 	margin: 0;
+}
+
+.service .runtime {
+	text-align: right;
 }
 
 .svc-stats {
