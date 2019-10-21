@@ -5,7 +5,7 @@
 				<div class="status-bubble" :class="{ok: ok(s)}" :title="s.Name"></div>
 			</div>
 		</div>
-		<service v-for="s in services" :key="s.Name" v-bind="s" />
+		<service v-for="s in sortedServices" :key="s.Name" v-bind="s" />
 	</section>
 </template>
 
@@ -34,6 +34,22 @@ export default {
 	data: function () {
 		return {
 			services: []
+		}
+	},
+	computed: {
+		sortedServices() {
+			return this.services.slice().sort((a,b) => {
+				if (a.LoadState !== b.LoadState) {
+					return a.LoadState !== "loaded" ? -1 : 1
+				}
+				if (a.ActiveState !== b.ActiveState) {
+					return a.ActiveState !== "active" ? -1 : 1 
+				}
+				if (a.SubState !== b.SubState) {
+					return a.SubState !== "running" ? -1 : 1
+				}
+				return 0
+			})
 		}
 	},
 	mounted () {
