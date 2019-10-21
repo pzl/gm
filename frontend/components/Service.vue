@@ -27,19 +27,32 @@
 					<div class="svc-label">Restarts</div>
 					<div class="svc-value">{{Restarts}}</div>
 				</div>
+				<div v-if="PIDs" class="PIDs">
+					<div class="svc-label">PIDs</div>
+					<div class="svc-value">{{PIDs}}</div>
+				</div>
 				<div class="aux-info">
 					<p v-if="ok">Uptime: {{time}}</p>
 					<p v-else>Since: {{time}}</p>
-					<div v-if="Runtime === 'rkt' && shortMounts.length">
-						Mount{{ shortMounts.length > 1 ? 's' : ''}}
-						<p v-for="m in shortMounts" :key="m">{{m}}</p>
+					<div v-if="mounts.length">
+						Mount{{ mounts.length > 1 ? 's' : ''}}
+						<p v-for="m in mounts" :key="m">{{m}}</p>
 					</div>
 				</div>
 			</div>
 		</div>
-		<template v-if="Runtime === 'rkt'">
+		<template v-if="Runtime !== 'native'">
 			<div class="extendedstats" :class="{shown:showExtend}">
-				<container v-bind="Container" />
+				<div v-if="NetIO" class="NetIO">
+					<div class="svc-label">Net IO</div>
+					<div class="svc-value">{{NetIO}}</div>
+				</div>
+				<div v-if="BlockIO" class="BlockIO">
+					<div class="svc-label">Block IO</div>
+					<div class="svc-value">{{BlockIO}}</div>
+				</div>
+				<rkt-container v-if="Runtime === 'rkt'" v-bind="Container" />
+				<podman-container v-else v-bind="Container" />
 			</div>
 			<div class="showmore" v-if="LoadState != 'not-found'" @click="toggle"><downArrow v-if="!showExtend" /><upArrow v-else /></div>
 		</template>
@@ -49,7 +62,8 @@
 
 <script>
 import { formatDistance } from 'date-fns'
-import Container from '~/components/Container.vue'
+import RktContainer from '~/components/RktContainer.vue'
+import PodmanContainer from '~/components/PodmanContainer.vue'
 import downArrow from '~/assets/downarrow.svg?inline'
 import upArrow from '~/assets/uparrow.svg?inline'
 
@@ -61,8 +75,11 @@ export default {
 		'ActiveState':{},
 		'SubState':{},
 		'PID':{},
+		'PIDs': {},
 		'Restarts':{},
 		'Memory':{},
+		'NetIO': {},
+		'BlockIO': {},
 		'TimeChange':{},
 		'Runtime': {},
 		'Container': {},
@@ -75,7 +92,25 @@ export default {
 	},
 	computed: {
 		mem: function () {
-			return +this.Memory == 0 ? 0 : (parseInt(this.Memory) / 2**20).toFixed(0) + " MB"
+			var m = parseInt(this.Memory)
+			var unit = "B"
+			if (m === 0) {
+				return 0
+			}
+			if (m > 1000) {
+				m /= 2**10
+				unit = "KB"
+			}
+			if (m > 1000) {
+				m /= 2**10
+				unit = "MB"
+			}
+			if (m > 1000) {
+				m /= 2**10
+				unit = "GB"
+			}
+
+			return m.toFixed(0) + " " + unit
 		},
 		time: function () {
 			if (+this.TimeChange == 0) {
@@ -99,19 +134,36 @@ export default {
 			}
 		},
 		ports: function () {
-			if (this.Container && this.Container.manifest.ports.length) {
-				return this.Container.manifest.ports.map(p=>p.hostPort).join(', ')
+			if (this.Container) {
+				switch (this.Runtime) {
+					case "rkt":
+						if (this.Container.manifest.ports.length) {
+							return this.Container.manifest.ports.map(p=>p.hostPort).join(', ')
+						}
+					case 'podman':
+						if (this.Container.NetworkSettings.Ports.length) {
+							return this.Container.NetworkSettings.Ports.map(p=>p.hostPort).join(', ')
+						}
+				}
 			} else {
 				// @TODO
 				return "?"
 			}
 		},
 		mounts: function () {
-			if (this.Container && this.Container.manifest.volumes && this.Container.manifest.volumes.length) {
-				return this.Container.manifest.volumes.filter(v=>v.kind != "empty").map(v=>v.source)
-			} else {
-				return []
+			if (this.Container){
+				switch (this.Runtime) {
+					case 'rkt':
+						if (this.Container.manifest.volumes && this.Container.manifest.volumes.length) {
+							return this.Container.manifest.volumes.filter(v=>v.kind != "empty").map(v=>v.source)
+						}
+					case 'podman':
+						if (this.Container.Mounts.length) {
+							return this.Container.Mounts.map(m=>m.Source)
+						}
+				}
 			}
+			return []
 		},
 		shortMounts: function() {
 			if (this.mounts.length < 2) {
@@ -148,7 +200,7 @@ export default {
 			this.showExtend = !this.showExtend
 		}
 	},
-	components: { downArrow, upArrow, Container }
+	components: { downArrow, upArrow, RktContainer, PodmanContainer }
 
 }
 </script>

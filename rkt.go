@@ -53,8 +53,6 @@ func getSystemPods() {
 	sysPods = pods.Pods
 }
 
-type RktInfo *v1alpha.Pod
-
 func getRktInfo(s *Service) {
 	if sysPods == nil {
 		getSystemPods()
@@ -65,7 +63,7 @@ PodSearch:
 	for _, p := range sysPods {
 		for _, a := range p.Apps {
 			if serviceMatchesContainer(s.Name, a.Name) {
-				s.Container = RktInfo(p)
+				s.Container = ContainerInfo(p)
 				break PodSearch
 			}
 		}

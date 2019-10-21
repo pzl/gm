@@ -21,7 +21,7 @@ import axios from 'axios'
  */
 function expandManifests(data) {
 	for (const srv of data) {
-		if (srv.Container) {
+		if (srv.Container && srv.Runtime === 'rkt') {
 			srv.Container.manifest = JSON.parse(atob(srv.Container.manifest))
 		}
 	}	

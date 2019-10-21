@@ -33,6 +33,8 @@ const (
 	RunPodman Runtime = "podman"
 )
 
+type ContainerInfo interface{}
+
 type Service struct {
 	Name        string
 	Description string
@@ -42,9 +44,12 @@ type Service struct {
 	PID         int
 	Restarts    int
 	Memory      uint64
+	NetIO       string
+	BlockIO     string
+	PIDs        int
 	TimeChange  uint64
 	Runtime     Runtime
-	Container   RktInfo
+	Container   ContainerInfo
 }
 
 func RegisterServiceHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
@@ -114,6 +119,12 @@ func GetServices(c *dbus.Conn) []Service {
 	if err != nil {
 		panic(err)
 	}
+
+	podstats, err := getPodmanStats()
+	if err != nil {
+		panic(err)
+	}
+
 	for _, u := range units {
 
 		propPID, _ := c.GetServiceProperty(u.Name, "MainPID") //or ExecMainPID
@@ -145,6 +156,7 @@ func GetServices(c *dbus.Conn) []Service {
 		switch {
 		case isPodmanService(pid):
 			s.Runtime = RunPodman
+			getPodmanInfo(&s, podstats)
 		case isRktService(pid):
 			s.Runtime = RunRkt
 			getRktInfo(&s)

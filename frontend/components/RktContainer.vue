@@ -1,6 +1,6 @@
 <template>
 	<div class="container">
-		<h3>Container</h3>
+		<h3>Rkt Container</h3>
 		<div class="cid">ID: {{id}}</div>
 		<div class="state">State: {{podstate}}</div>
 		<div class="pid">PID: {{pid}}</div>
