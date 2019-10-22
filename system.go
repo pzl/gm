@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"os/exec"
 
 	"github.com/coreos/go-systemd/dbus"
+	"github.com/sirupsen/logrus"
 )
 
 type Versions struct {
@@ -22,11 +24,15 @@ type Versions struct {
 	Podman string `json:"podman"`
 }
 
-func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
+func RegisterSystemHandlers(serveMux *http.ServeMux, ctx context.Context) {
+	log := ctx.Value(logKey).(*logrus.Logger)
+	c := ctx.Value(dbusKey).(*dbus.Conn)
 	serveMux.HandleFunc("/api/system/reload", func(w http.ResponseWriter, r *http.Request) {
+		log.Warn("reloading systemd")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		err := ReloadSystemD(c)
 		if err != nil {
+			log.WithError(err).Error("error reloading systemd")
 			w.Write([]byte(err.Error()))
 		} else {
 			w.Write([]byte("reloaded"))
@@ -42,6 +48,7 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 
 		js, err := json.Marshal(v)
 		if err != nil {
+			log.WithError(err).Error("error encoding version info to json")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -52,10 +59,12 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 	})
 
 	serveMux.HandleFunc("/api/system/vpn/", func(w http.ResponseWriter, r *http.Request) {
+
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		out, err := exec.Command("systemctl", "is-active", "vpn-out.service").Output()
 		if err != nil && len(out) == 0 {
+			log.WithError(err).Error("error checking if vpn-out.service is running")
 			w.Write([]byte(`{"error": "` + err.Error() + `"}`))
 			return
 		}
@@ -76,6 +85,7 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, c *dbus.Conn) {
 
 		js, err := json.Marshal(m)
 		if err != nil {
+			log.WithError(err).Error("error json marshaling memory info")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

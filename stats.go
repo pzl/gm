@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"encoding/json"
+
+	"github.com/sirupsen/logrus"
 	//"strconv"
 )
 
@@ -24,7 +27,8 @@ type DiskStat struct {
 }
 */
 
-func RegisterStatsHandlers(serveMux *http.ServeMux) {
+func RegisterStatsHandlers(serveMux *http.ServeMux, ctx context.Context) {
+	log := ctx.Value(logKey).(*logrus.Logger)
 
 	serveMux.HandleFunc("/api/stats/disk/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
@@ -37,6 +41,7 @@ func RegisterStatsHandlers(serveMux *http.ServeMux) {
 
 		js, err := json.Marshal(stats)
 		if err != nil {
+			log.WithError(err).Error("error json marshaling disk stat info")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
