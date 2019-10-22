@@ -36,7 +36,7 @@
 					<p v-else>Since: {{time}}</p>
 					<div v-if="mounts.length">
 						Mount{{ mounts.length > 1 ? 's' : ''}}
-						<p v-for="m in mounts" :key="m">{{m}}</p>
+						<p v-for="m in mounts" :key="m">{{trimTo(m,32)}}</p>
 					</div>
 				</div>
 			</div>
@@ -198,6 +198,12 @@ export default {
 	methods: {
 		toggle: function () {
 			this.showExtend = !this.showExtend
+		},
+		trimTo(str, l) {
+			if (str.length > l) {
+				return str.substr(0,l)+"..."
+			}
+			return str
 		}
 	},
 	components: { downArrow, upArrow, RktContainer, PodmanContainer }
