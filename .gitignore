@@ -1,5 +1,6 @@
 node_modules/
 manager
 frontend/dist/
+assets.go
 *.ora
 vendor/

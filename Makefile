@@ -1,25 +1,27 @@
-GO_SRCS=manager.go system.go
-SERVER=manager
+TARGET=manager
+SRCS=$(shell find . -type f -name '*.go')
 
-FRONTEND=frontend/dist
+ALL: $(TARGET)
 
+$(TARGET): $(SRCS) assets.go
+	go build -o $@
 
-ALL: $(SERVER) $(FRONTEND)
+assets.go: assets_gen.go frontend/dist/index.html
+	go generate
 
+frontend/dist/index.html: frontend/node_modules $(shell find frontend -type f -name '*.vue') $(shell find frontend -type f -name '*.js')
+	cd frontend && npm run build
 
-install-deps:
+frontend/node_modules: frontend/package.json frontend/package-lock.json
 	cd frontend && npm install
 
-dev:
+run:
 	cd frontend && npm run dev
-
-$(SERVER): $(GO_SRCS)
-	go build
-
-$(FRONTEND): frontend/
-	cd frontend && npm run generate
 
 
 clean:
-	$(RM) manager
-	$(RM) -rf $(FRONTEND)
+	$(RM) $(TARGET)
+	$(RM) -rf frontend/dist
+
+
+.PHONY: clean run

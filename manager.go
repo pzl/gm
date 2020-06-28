@@ -1,3 +1,5 @@
+//go:generate go run assets_gen.go
+
 package main
 
 import (
@@ -85,7 +87,7 @@ func main() {
 		//when in prod mode:
 		log.Info("serving in production mode. Fileserver at frontend/dist")
 		//@todo: compile these assets in
-		serveMux.Handle("/", http.FileServer(http.Dir("frontend/dist")))
+		serveMux.Handle("/", http.FileServer(assets))
 	}
 
 	srv := &http.Server{

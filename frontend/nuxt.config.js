@@ -1,6 +1,7 @@
 const StyleLintPlugin = require('stylelint-webpack-plugin')
 
 module.exports = {
+  mode: 'spa',
   env: {
   	api: process.env.API || "" //http://localhost:2556
   },
