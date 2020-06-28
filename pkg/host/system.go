@@ -1,4 +1,4 @@
-package main
+package host
 
 import (
 	"context"
@@ -14,6 +14,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/pzl/manager/pkg/config"
+
 	"github.com/coreos/go-systemd/dbus"
 	"github.com/sirupsen/logrus"
 )
@@ -25,8 +27,8 @@ type Versions struct {
 }
 
 func RegisterSystemHandlers(serveMux *http.ServeMux, ctx context.Context) {
-	log := ctx.Value(logKey).(*logrus.Logger)
-	c := ctx.Value(dbusKey).(*dbus.Conn)
+	log := ctx.Value(config.LogKey).(*logrus.Logger)
+	c := ctx.Value(config.DbusKey).(*dbus.Conn)
 	serveMux.HandleFunc("/api/system/reload", func(w http.ResponseWriter, r *http.Request) {
 		log.Warn("reloading systemd")
 		w.Header().Set("Access-Control-Allow-Origin", "*")

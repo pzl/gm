@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"bytes"
@@ -23,14 +23,6 @@ func readCmdLine(pid int) ([]string, error) {
 		s[i] = string(b[i])
 	}
 	return s, nil
-}
-
-func isPodmanService(pid int) bool {
-	exe, err := readCmdLine(pid)
-	if err != nil {
-		return false
-	}
-	return exe[0] == "/usr/bin/podman"
 }
 
 type podData struct{ d []byte }

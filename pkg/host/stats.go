@@ -1,4 +1,4 @@
-package main
+package host
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 
 	"encoding/json"
 
+	"github.com/pzl/manager/pkg/config"
 	"github.com/sirupsen/logrus"
-	//"strconv"
 )
 
 type DiskStats struct {
@@ -28,7 +28,7 @@ type DiskStat struct {
 */
 
 func RegisterStatsHandlers(serveMux *http.ServeMux, ctx context.Context) {
-	log := ctx.Value(logKey).(*logrus.Logger)
+	log := ctx.Value(config.LogKey).(*logrus.Logger)
 
 	serveMux.HandleFunc("/api/stats/disk/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {

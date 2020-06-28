@@ -3,11 +3,11 @@ SRCS=$(shell find . -type f -name '*.go')
 
 ALL: $(TARGET)
 
-$(TARGET): $(SRCS) assets.go
-	go build -o $@
+$(TARGET): $(SRCS) cmd/manager/assets.go
+	go build -o $@ ./cmd/manager
 
-assets.go: assets_gen.go frontend/dist/index.html
-	go generate
+cmd/manager/assets.go: cmd/manager/assets_gen.go frontend/dist/index.html
+	go generate ./cmd/manager
 
 frontend/dist/index.html: frontend/node_modules $(shell find frontend -type f -name '*.vue') $(shell find frontend -type f -name '*.js')
 	cd frontend && npm run build

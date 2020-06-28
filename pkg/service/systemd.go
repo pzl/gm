@@ -1,15 +1,18 @@
-package main
+package service
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"encoding/json"
 	"strconv"
 
 	"github.com/coreos/go-systemd/dbus"
+	"github.com/pzl/manager/pkg/config"
 	"github.com/sirupsen/logrus"
 
 	_ "context"
@@ -17,17 +20,6 @@ import (
 	_ "github.com/rkt/rkt/api/v1alpha"
 	_ "google.golang.org/grpc"
 )
-
-/*
- * Todo: integrate with rkt API service
- * https://coreos.com/rkt/docs/latest/subcommands/api-service.html
- * https://github.com/rkt/rkt/blob/master/api/v1alpha/client_example.go
- * https://github.com/rkt/rkt/blob/master/api/v1alpha/api.proto#L460
- *
- */
-
-/* Or: `rkt list` + `rkt cat-manifest <UUID>` + `rkt status <UUID>`
- */
 
 type Runtime string
 
@@ -57,7 +49,7 @@ type Service struct {
 }
 
 func RegisterServiceHandlers(serveMux *http.ServeMux, ctx context.Context) {
-	log := ctx.Value(logKey).(*logrus.Logger)
+	log := ctx.Value(config.LogKey).(*logrus.Logger)
 
 	serveMux.HandleFunc("/api/services/count/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
@@ -107,9 +99,9 @@ func RegisterServiceHandlers(serveMux *http.ServeMux, ctx context.Context) {
 func GetServices(ctx context.Context) []Service {
 	var list []Service
 
-	c := ctx.Value(dbusKey).(*dbus.Conn)
-	f := ctx.Value(fileKey).(string)
-	log := ctx.Value(logKey).(*logrus.Logger)
+	c := ctx.Value(config.DbusKey).(*dbus.Conn)
+	f := ctx.Value(config.FileKey).(string)
+	log := ctx.Value(config.LogKey).(*logrus.Logger)
 
 	data, err := ioutil.ReadFile(f)
 	if err != nil {
@@ -165,11 +157,11 @@ func GetServices(ctx context.Context) []Service {
 			TimeChange:  lastChange,
 		}
 		switch {
-		case isPodmanService(pid):
+		case isPodman(pid):
 			log.WithField("name", u.Name).Debug("is a podman service. Enriching with container info")
 			s.Runtime = RunPodman
 			getPodmanInfo(&s, podstats)
-		case isRktService(pid):
+		case isRkt(pid):
 			log.WithField("name", u.Name).Debug("is a rkt service. Enriching with container info")
 			s.Runtime = RunRkt
 			getRktInfo(&s)
@@ -181,4 +173,33 @@ func GetServices(ctx context.Context) []Service {
 		list = append(list, s)
 	}
 	return list
+}
+
+func isRkt(pid int) bool {
+	file, err := os.Open("/proc/" + strconv.Itoa(pid) + "/cmdline")
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+	onNul := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		for i := 0; i < len(data); i++ {
+			if data[i] == '\x00' {
+				return i + 1, data[:i], nil
+			}
+		}
+		return 0, data, bufio.ErrFinalToken
+	}
+	scanner := bufio.NewScanner(file)
+	scanner.Split(onNul)
+	scanner.Scan()
+	exe := scanner.Text()
+	return exe == "/usr/bin/systemd-nspawn"
+}
+
+func isPodman(pid int) bool {
+	exe, err := readCmdLine(pid)
+	if err != nil {
+		return false
+	}
+	return exe[0] == "/usr/bin/podman"
 }
