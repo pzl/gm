@@ -18,10 +18,6 @@
 						<td>{{linuxver}}</td>
 					</tr>
 					<tr>
-						<td>rkt version</td>
-						<td>{{rkt}}</td>
-					</tr>
-					<tr>
 						<td>Podman Version</td>
 						<td>{{podman}}</td>
 					</tr>
@@ -45,7 +41,6 @@ export default {
 			services: 0,
 			vpn: -1,
 			linuxver: "",
-			rkt: "",
 			podman: "",
 			mem: {
 				total: 0,
@@ -72,7 +67,6 @@ export default {
 		this.get("/api/services/count").then(c => {this.services = c.data })
 		this.get("/api/system/versions").then(v => {
 			this.linuxver = v.data.linux
-			this.rkt = v.data.rkt
 			this.podman = v.data.podman
 		})
 		this.get("/api/system/memory").then(m=> {

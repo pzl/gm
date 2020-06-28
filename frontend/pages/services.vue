@@ -13,22 +13,6 @@
 import Service from '~/components/Service.vue'
 import axios from 'axios'
 
-/* On the server-side, Manifest is a []byte, not a string. So when it gets
- * serialized, it goes from an object (struct) to base64 string. Changing it
- * there would require basically re-making the Pod struct already provided.
- *
- * OR, I can just expand it here for now.
- */
-function expandManifests(data) {
-	for (const srv of data) {
-		if (srv.Container && srv.Runtime === 'rkt') {
-			srv.Container.manifest = JSON.parse(atob(srv.Container.manifest))
-		}
-	}	
-
-	return data
-}
-
 
 export default {
 	data: function () {
@@ -54,7 +38,7 @@ export default {
 	},
 	mounted () {
 		axios.get(process.env.api+'/api/services/')
-			.then(response => this.services = expandManifests(response.data))
+			.then(response => this.services = response.data)
 	},
 	methods: {
 		ok: function(s) {

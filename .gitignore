@@ -4,3 +4,4 @@ frontend/dist/
 assets.go
 *.ora
 vendor/
+services.txt

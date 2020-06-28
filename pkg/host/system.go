@@ -22,7 +22,6 @@ import (
 
 type Versions struct {
 	Linux  string `json:"linux"`
-	Rkt    string `json:"rkt"`
 	Podman string `json:"podman"`
 }
 
@@ -44,7 +43,6 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, ctx context.Context) {
 	serveMux.HandleFunc("/api/system/versions/", func(w http.ResponseWriter, r *http.Request) {
 		v := Versions{
 			Linux:  Uname(),
-			Rkt:    RktVer(),
 			Podman: PodmanVersion(),
 		}
 
@@ -103,19 +101,6 @@ func RegisterSystemHandlers(serveMux *http.ServeMux, ctx context.Context) {
  */
 func ReloadSystemD(c *dbus.Conn) error {
 	return c.Reload()
-}
-
-/*
- * Gets local rkt version as a string
- */
-func RktVer() string {
-	out, err := exec.Command("rkt", "v").Output()
-	if err != nil {
-		return err.Error()
-	}
-	lines := bytes.Split(out, []byte{'\n'})
-	fields := strings.Fields(string(lines[0]))
-	return fields[2]
 }
 
 /*

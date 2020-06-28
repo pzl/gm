@@ -51,8 +51,7 @@
 					<div class="svc-label">Block IO</div>
 					<div class="svc-value">{{BlockIO}}</div>
 				</div>
-				<rkt-container v-if="Runtime === 'rkt'" v-bind="Container" />
-				<podman-container v-else v-bind="Container" />
+				<podman-container v-bind="Container" />
 			</div>
 			<div class="showmore" v-if="LoadState != 'not-found'" @click="toggle"><downArrow v-if="!showExtend" /><upArrow v-else /></div>
 		</template>
@@ -62,7 +61,6 @@
 
 <script>
 import { formatDistance } from 'date-fns'
-import RktContainer from '~/components/RktContainer.vue'
 import PodmanContainer from '~/components/PodmanContainer.vue'
 import downArrow from '~/assets/downarrow.svg?inline'
 import upArrow from '~/assets/uparrow.svg?inline'
@@ -136,10 +134,6 @@ export default {
 		ports: function () {
 			if (this.Container) {
 				switch (this.Runtime) {
-					case "rkt":
-						if (this.Container.manifest.ports.length) {
-							return this.Container.manifest.ports.map(p=>p.hostPort).join(', ')
-						}
 					case 'podman':
 						if (this.Container.NetworkSettings.Ports.length) {
 							return this.Container.NetworkSettings.Ports.map(p=>p.hostPort).join(', ')
@@ -153,10 +147,6 @@ export default {
 		mounts: function () {
 			if (this.Container){
 				switch (this.Runtime) {
-					case 'rkt':
-						if (this.Container.manifest.volumes && this.Container.manifest.volumes.length) {
-							return this.Container.manifest.volumes.filter(v=>v.kind != "empty").map(v=>v.source)
-						}
 					case 'podman':
 						if (this.Container.Mounts.length) {
 							return this.Container.Mounts.map(m=>m.Source)
@@ -206,7 +196,7 @@ export default {
 			return str
 		}
 	},
-	components: { downArrow, upArrow, RktContainer, PodmanContainer }
+	components: { downArrow, upArrow, PodmanContainer }
 
 }
 </script>

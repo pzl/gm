@@ -1,12 +1,10 @@
 package service
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"encoding/json"
 	"strconv"
@@ -17,7 +15,6 @@ import (
 
 	_ "context"
 
-	_ "github.com/rkt/rkt/api/v1alpha"
 	_ "google.golang.org/grpc"
 )
 
@@ -25,7 +22,6 @@ type Runtime string
 
 const (
 	RunNative Runtime = "native"
-	RunRkt    Runtime = "rkt"
 	RunPodman Runtime = "podman"
 )
 
@@ -161,10 +157,6 @@ func GetServices(ctx context.Context) []Service {
 			log.WithField("name", u.Name).Debug("is a podman service. Enriching with container info")
 			s.Runtime = RunPodman
 			getPodmanInfo(&s, podstats)
-		case isRkt(pid):
-			log.WithField("name", u.Name).Debug("is a rkt service. Enriching with container info")
-			s.Runtime = RunRkt
-			getRktInfo(&s)
 		default:
 			log.WithField("name", u.Name).Debug("is not a container service")
 			s.Runtime = RunNative
@@ -173,27 +165,6 @@ func GetServices(ctx context.Context) []Service {
 		list = append(list, s)
 	}
 	return list
-}
-
-func isRkt(pid int) bool {
-	file, err := os.Open("/proc/" + strconv.Itoa(pid) + "/cmdline")
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-	onNul := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		for i := 0; i < len(data); i++ {
-			if data[i] == '\x00' {
-				return i + 1, data[:i], nil
-			}
-		}
-		return 0, data, bufio.ErrFinalToken
-	}
-	scanner := bufio.NewScanner(file)
-	scanner.Split(onNul)
-	scanner.Scan()
-	exe := scanner.Text()
-	return exe == "/usr/bin/systemd-nspawn"
 }
 
 func isPodman(pid int) bool {
