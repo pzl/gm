@@ -45,9 +45,6 @@ module.exports = {
   			'postcss-import': {
   				//path: ['assets/css']
   			},
-  			'postcss-cssnext': {
-  				'browsers': ['last 2 versions']
-  			},
   			'postcss-url': {},
   			'postcss-pxtorem': {}
   		}
