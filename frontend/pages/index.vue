@@ -1,84 +1,83 @@
 <template>
-	<section id="dashboard">
-
-		<div class="quickbar box">
-			<div class="svc">
-				Services: <span class="val">{{services}}</span>
-			</div>
-			<div class="vpn">
-				VPN: <span class="val">{{vpnState}}</span>
-			</div>
+	<section>
+		
+		<div class="d-flex justify-space-around flex-column flex-sm-row flex-sm-wrap align-center align-content-center">
+			<service
+				v-for="(s,i) in services" :key="i" v-bind="s"
+				@removed="services.splice(i,1)"
+				@action="reloadService(s.name)"
+				@toast="toast"
+				class="my-7"
+				:style="{ maxWidth: ($vuetify.mdAndUp ? '21%' : '100%') }"
+			/>
 		</div>
 
-		<div class="box">
-			<table class="datatable">
-				<tbody>
-					<tr>
-						<td>Linux</td>
-						<td>{{linuxver}}</td>
-					</tr>
-					<tr>
-						<td>Podman Version</td>
-						<td>{{podman}}</td>
-					</tr>
-					<tr>
-						<td>Memory Used / Total</td>
-						<td>{{kbSize(mem.used)}} / {{kbSize(mem.total)}}</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+		<v-snackbar
+			v-model="snacky.show"
+
+		>
+			{{ snacky.text }}
+			<template v-slot:action="{ attrs }">
+				<v-btn color="blue" text v-bind="attrs" @click="snacky.show = false">Close</v-btn>
+			</template>
+		</v-snackbar>
 
 	</section>
 </template>
 
+
 <script>
-import axios from 'axios'
+import Service from '~/components/Service'
 
 export default {
-	data: function() {
+	data() {
 		return {
-			services: 0,
-			vpn: -1,
-			linuxver: "",
-			podman: "",
-			mem: {
-				total: 0,
-				used: 0,
+			services: [],
+
+			snacky: {
+				show: false,
+				text: ''
 			}
 		}
 	},
 	computed: {
-		vpnState() {
-			switch (this.vpn) {
-				case true: return "up"
-				case false: return "down"
-				default: return "unknown"
-			}
-	},
-	},
-	components: {
 	},
 	methods: {
-		kbSize: n => (n/2**20).toFixed(1)+" GB",
-		get: url => axios.get(process.env.api+url),
+		getServices() {
+			this.$http.$get(`${this.$server}/api/v1/services`)
+				.then(d => {
+					this.services = d
+				})
+				.catch(e => {
+					this.toast(`Failed fetching services: ${e.message}`)
+				})
+		},
+		reloadService(name) {
+			this.$http.$get(`${this.$server}/api/v1/services/${name}`)
+				.then(d => {
+					const idx = this.services.map(s => s.name).indexOf(name)
+					if (idx === -1) {
+						this.services.unshift(d)
+					} else {
+						this.$set(this.services, idx, d)
+					}
+				})
+				.catch(e => {
+					console.log("reload fail: ",e)
+					this.toast(`Reloading service ${name} failed: ${e.message}`)
+				})
+		},
+		toast(msg) {
+			this.snacky.text = msg
+			this.snacky.show = true
+		},
 	},
-	mounted () {
-		this.get("/api/services/count").then(c => {this.services = c.data })
-		this.get("/api/system/versions").then(v => {
-			this.linuxver = v.data.linux
-			this.podman = v.data.podman
-		})
-		this.get("/api/system/memory").then(m=> {
-			this.mem.total = m.data.total
-			this.mem.used = m.data.total - m.data.avail
-		})
-
-		this.get("/api/system/vpn").then(v=>{this.vpn = v.data})
-	}
+	//async asyncData(context) {},
+	mounted() {
+		this.getServices()
+	},
+	beforeDestroy() {},
+	watch: {},
+	components: { Service }
 }
 </script>
-
-<style>
-
-</style>

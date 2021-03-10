@@ -1,128 +1,75 @@
-const StyleLintPlugin = require('stylelint-webpack-plugin')
+import colors from 'vuetify/es5/util/colors'
 
-module.exports = {
-  mode: 'spa',
-  env: {
-  	api: process.env.API || "" //http://localhost:2556
-  },
+export default {
+  // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
+  ssr: false,
 
-  /*
-  ** Headers of the page
-  */
+  // Target: https://go.nuxtjs.dev/config-target
+  target: 'static',
+
+  // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'manager',
+    titleTemplate: '%s - gm',
+    title: 'gm',
+    htmlAttrs: {
+      lang: 'en'
+    },
     meta: [
       { charset: 'utf-8' },
-      { 'http-equiv': 'x-ua-compatible', content: 'ie=edge' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: 'Manage resources and services' }
+      { hid: 'description', name: 'description', content: '' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
-  /*
-  ** Customize the progress bar color
-  */
-  loading: { color: '#3B8070' },
+
+  // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-  	'@/assets/css/normalize.css',
-  	'@/assets/css/main.css',
   ],
-  /*
-  ** Build configuration
-  */
-  build: {
-  	plugins: [
-  		new StyleLintPlugin({
-  			configFile: '.stylelintrc',
-  			files: ['assets/css/main.css', '**/*.vue']
-  		})
-  	],
-  	extractCSS: true,
-  	postcss: {
-  		plugins: {
-  			'postcss-import': {
-  				//path: ['assets/css']
-  			},
-  			'postcss-url': {},
-  			'postcss-pxtorem': {}
-  		}
-  	},
-  	vendor: [
-  		'axios',
-  	],
 
-    /*
-    ** Run ESLint on save
-    */
-    extend (config, { isDev, isClient }) {
-      config.devtool = false
+  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
+  plugins: [
+    { src: '~/plugins/server.js', mode: 'client' },
+  ],
 
-      if (isDev && isClient) {
-        config.module.rules.push({
-          enforce: 'pre',
-          test: /\.(js|vue)$/,
-          loader: 'eslint-loader',
-          exclude: /(node_modules)/
-        })
+  // Auto import components: https://go.nuxtjs.dev/config-components
+  components: true,
+
+  // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
+  buildModules: [
+    // https://go.nuxtjs.dev/eslint
+    // '@nuxtjs/eslint-module',
+    // https://go.nuxtjs.dev/vuetify
+    '@nuxtjs/vuetify'
+  ],
+
+  // Modules: https://go.nuxtjs.dev/config-modules
+  modules: [
+    '@nuxt/http',
+  ],
+
+  // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
+  vuetify: {
+    customVariables: ['~/assets/variables.scss'],
+    theme: {
+      dark: true,
+      themes: {
+        dark: {
+          primary: colors.blue.darken2,
+          accent: colors.grey.darken3,
+          secondary: colors.amber.darken3,
+          info: colors.teal.lighten1,
+          warning: colors.amber.base,
+          error: colors.deepOrange.accent4,
+          success: colors.green.accent3
+        }
       }
-
-      let vueLoader = config.module.rules.find(rule => rule.loader === 'vue-loader');
-      vueLoader.options.transformToRequire = {
-        img: 'src',
-        image: 'xlink:href',
-        use: 'href',
-        use: 'xlink:href',
-        object: 'data',
-        video: 'src',
-        source: 'src'
-      }
-
-      let fileLoader = config.module.rules.find(rule => rule.test.toString().includes('svg'))
-      fileLoader.test = /\.(png|jpe?g|gif)$/
-
-      config.module.rules.push({
-        test: /\.svg$/,
-        exclude: /node_modules/,
-        oneOf: [
-          {
-            resourceQuery: /inline/,
-            loader: 'vue-svg-loader',
-            options: {
-              svgo: {
-                plugins: [
-                  {removeViewBox: false},
-                  {removeUselessStrokeAndFill: false}
-                ]
-              }
-            }
-          },
-          {
-            use: [
-              {
-                loader: 'svg-url-loader',
-                options: {
-                  name: 'img/[name].[hash:7].[ext]',
-                  limit: 1000,
-                  stripdeclarations: true,
-                  iesafe: true,
-                  noquotes: true
-                }
-              },
-              'svg-fill-loader'
-            ]
-
-          }
-        ]
-      })
-
     }
   },
-  watchers: {
-    chokidar: {
-      usePolling: false,
-      ignored: '*node_modules*'
-    }
-  }
+
+  // Build Configuration: https://go.nuxtjs.dev/config-build
+  build: {},
+  telemetry: false,
+
 }

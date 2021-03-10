@@ -1,7 +1,12 @@
-node_modules/
-manager
-frontend/dist/
+bin/
+*.db
 assets.go
-*.ora
-vendor/
-services.txt
+favicon.ico
+
+
+# badgerDB files
+*.vlog
+*.sst
+KEYREGISTRY
+MANIFEST
+LOCK
